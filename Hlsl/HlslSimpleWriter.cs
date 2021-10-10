@@ -279,19 +279,20 @@ namespace HlslDecompiler
                         GetSourceName(instruction, 1), GetSourceName(instruction, 2));
                     break;
                 case Opcode.Tex:
+
                     if ((_shader.MajorVersion == 1 && _shader.MinorVersion >= 4) || (_shader.MajorVersion > 1))
                     {
-                        WriteLine("{0} = tex2D({2}, {1});", GetDestinationName(instruction),
-                            GetSourceName(instruction, 1), GetSourceName(instruction, 2));
+                        WriteLine("{0} = {3}({2}, {1});", GetDestinationName(instruction),
+                            GetSourceName(instruction, 1), GetSourceName(instruction, 2), GetTextureOperatorNameByParameter(instruction, 2));
                     }
                     else
                     {
-                        WriteLine("{0} = tex2D();", GetDestinationName(instruction));
+                        WriteLine("{0} = {1}();", GetDestinationName(instruction), GetTextureOperatorNameByParameter(instruction, 2));
                     }
                     break;
                 case Opcode.TexLDL:
-                    WriteLine("{0} = tex2Dlod({2}, {1});", GetDestinationName(instruction),
-                        GetSourceName(instruction, 1), GetSourceName(instruction, 2));
+                    WriteLine("{0} = {3}lod({2}, {1});", GetDestinationName(instruction),
+                        GetSourceName(instruction, 1), GetSourceName(instruction, 2), GetTextureOperatorNameByParameter(instruction, 2));
                     break;
                 case Opcode.TexKill:
                     WriteLine("clip({0});", GetDestinationName(instruction));

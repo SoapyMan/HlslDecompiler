@@ -39,6 +39,31 @@ namespace HlslDecompiler.Hlsl
             return string.Format("{0}{1}", registerName, writeMaskName);
         }
 
+        public ParameterType GetSourceParameterType(Instruction instruction, int srcIndex)
+        {
+            var registerType = instruction.GetParamRegisterType(srcIndex);
+            switch (registerType)
+            {
+                case RegisterType.Sampler:
+
+                    int registerNumber = instruction.GetParamRegisterNumber(srcIndex);
+                    ConstantDeclaration decl = FindConstant(RegisterSet.Sampler, registerNumber);
+                    if (decl == null)
+                    {
+                        // Constant register not found in def statements nor the constant table
+                        throw new NotImplementedException();
+                    }
+
+                    return decl.ParameterType;
+
+                    break;
+                default:
+                    
+                    break;
+            }
+            return ParameterType.Unsupported;
+        }
+
         public string GetSourceName(Instruction instruction, int srcIndex)
         {
             string sourceRegisterName;

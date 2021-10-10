@@ -50,6 +50,34 @@ namespace HlslDecompiler
             return _registers.GetSourceName(instruction, srcIndex);
         }
 
+        protected ParameterType GetSourceParameterType(Instruction instruction, int srcIndex)
+        {
+            return _registers.GetSourceParameterType(instruction, srcIndex);
+        }
+
+        protected string GetTextureOperatorNameByParameter(Instruction instruction, int srcIndex)
+        {
+            string texOpType;
+            switch (GetSourceParameterType(instruction, srcIndex))
+            {
+                case ParameterType.Sampler1D:
+                    texOpType = "tex2D";
+                    break;
+                case ParameterType.Sampler2D:
+                    texOpType = "tex2D";
+                    break;
+                case ParameterType.Sampler3D:
+                    texOpType = "tex3D";
+                    break;
+                case ParameterType.SamplerCube:
+                    texOpType = "texCUBE";
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            return texOpType;
+        }
+
         private static string GetConstantTypeName(ConstantDeclaration declaration)
         {
             switch (declaration.ParameterClass)
@@ -78,9 +106,12 @@ namespace HlslDecompiler
                 case ParameterClass.Object:
                     switch (declaration.ParameterType)
                     {
-                        case ParameterType.Sampler2D:
-                        case ParameterType.Sampler3D:
+                        case ParameterType.Sampler1D:
                             return "sampler";
+                        case ParameterType.Sampler2D:
+                            return "sampler2D";
+                        case ParameterType.Sampler3D:
+                            return "sampler3D";
                         default:
                             throw new NotImplementedException();
                     }
@@ -130,7 +161,7 @@ namespace HlslDecompiler
                 foreach (ConstantDeclaration declaration in _registers.ConstantDeclarations)
                 {
                     string typeName = GetConstantTypeName(declaration);
-                    WriteLine("{0} {1};", typeName, declaration.Name);
+                    WriteLine("{0} {1} : register( {2}{3} );", typeName, declaration.Name, (declaration.RegisterSet == RegisterSet.Sampler) ? "s" : "c", declaration.RegisterIndex);
                 }
 
                 WriteLine();
