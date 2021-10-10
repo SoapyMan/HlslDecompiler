@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace HlslDecompiler.DirectXShaderModel
 {
@@ -362,12 +363,13 @@ namespace HlslDecompiler.DirectXShaderModel
         public byte[] GetSourceSwizzleComponents(int srcIndex)
         {
             int swizzle = GetSourceSwizzle(srcIndex);
-            byte[] swizzleArray = new byte[4];
+            var swizzleArray = new List<byte>();
+   
             for (int i = 0; i < 4; i++)
             {
-                swizzleArray[i] = (byte)((swizzle >> (i * 2)) & 0x3);
+                swizzleArray.Add((byte)((swizzle >> (i * 2)) & 0x3));
             }
-            return swizzleArray;
+            return swizzleArray.ToArray();
         }
 
         public string GetSourceSwizzleName(int srcIndex)
@@ -389,12 +391,11 @@ namespace HlslDecompiler.DirectXShaderModel
 
             byte[] swizzle = GetSourceSwizzleComponents(srcIndex);
 
-            int writeMaskLength = GetDestinationMaskedLength();
-
             string swizzleName = "";
-            for (int i = 0; i < writeMaskLength; i++)
+            for (int i = 0; i < swizzle.Length; i++)
             {
-                if ((destinationMask & (1 << i)) != 0)
+                // FIXME: is that needed
+                //if ((destinationMask & (1 << i)) != 0)
                 {
                     switch (swizzle[i])
                     {
@@ -415,9 +416,9 @@ namespace HlslDecompiler.DirectXShaderModel
             }
 
             // don't swizzle in certain cases
-            if(writeMaskLength == 2 && swizzleName == "xy" ||
-               writeMaskLength == 3 && swizzleName == "xyz" ||
-               writeMaskLength == 4 && swizzleName == "xyzw")
+            if(swizzle.Length == 2 && swizzleName == "xy" ||
+               swizzle.Length == 3 && swizzleName == "xyz" ||
+               swizzle.Length == 4 && swizzleName == "xyzw")
             {
                 return "";
             }
