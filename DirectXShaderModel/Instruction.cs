@@ -376,11 +376,11 @@ namespace HlslDecompiler.DirectXShaderModel
             switch (Opcode)
             {
                 case Opcode.Dp3:
-                    destinationMask = 7;
+                    destinationMask = 7;    // xyz
                     break;
                 case Opcode.Dp4:
                 case Opcode.IfC:
-                    destinationMask = 15;
+                    destinationMask = 15;   // xyzw
                     break;
                 default:
                     destinationMask = GetDestinationWriteMask();
@@ -389,8 +389,10 @@ namespace HlslDecompiler.DirectXShaderModel
 
             byte[] swizzle = GetSourceSwizzleComponents(srcIndex);
 
+            int writeMaskLength = GetDestinationMaskedLength();
+
             string swizzleName = "";
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < writeMaskLength; i++)
             {
                 if ((destinationMask & (1 << i)) != 0)
                 {
@@ -411,16 +413,32 @@ namespace HlslDecompiler.DirectXShaderModel
                     }
                 }
             }
+
+            // don't swizzle in certain cases
+            if(writeMaskLength == 2 && swizzleName == "xy" ||
+               writeMaskLength == 3 && swizzleName == "xyz" ||
+               writeMaskLength == 4 && swizzleName == "xyzw")
+            {
+                return "";
+            }
+
+            // simplify as fxc allows that
             switch (swizzleName)
             {
-                case "xyzw":
-                    return "";
+                case "xx":
+                case "xxx":
                 case "xxxx":
                     return ".x";
+                case "yy":
+                case "yyy":
                 case "yyyy":
                     return ".y";
+                case "zz":
+                case "zzz":
                 case "zzzz":
                     return ".z";
+                case "ww":
+                case "www":
                 case "wwww":
                     return ".w";
                 default:
