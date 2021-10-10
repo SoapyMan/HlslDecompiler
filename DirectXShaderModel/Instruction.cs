@@ -374,25 +374,29 @@ namespace HlslDecompiler.DirectXShaderModel
 
         public string GetSourceSwizzleName(int srcIndex)
         {
+            int maxComponents;
             int destinationMask;
             switch (Opcode)
             {
                 case Opcode.Dp3:
                     destinationMask = 7;    // xyz
+                    maxComponents = 3;
                     break;
                 case Opcode.Dp4:
                 case Opcode.IfC:
                     destinationMask = 15;   // xyzw
+                    maxComponents = 4;
                     break;
                 default:
                     destinationMask = GetDestinationWriteMask();
+                    maxComponents = GetDestinationMaskLength();
                     break;
             }
 
             byte[] swizzle = GetSourceSwizzleComponents(srcIndex);
 
             string swizzleName = "";
-            for (int i = 0; i < swizzle.Length; i++)
+            for (int i = 0; i < maxComponents; i++)
             {
                 // FIXME: is that needed
                 //if ((destinationMask & (1 << i)) != 0)
@@ -414,6 +418,9 @@ namespace HlslDecompiler.DirectXShaderModel
                     }
                 }
             }
+
+            if (swizzleName.Length == 0)
+                return "";
 
             // don't swizzle in certain cases
             if(swizzle.Length == 2 && swizzleName == "xy" ||
@@ -472,7 +479,8 @@ namespace HlslDecompiler.DirectXShaderModel
 
         public string GetDeclSemantic()
         {
-            switch (GetParamRegisterType(1))
+            RegisterType regType = GetParamRegisterType(1);
+            switch (regType)
             {
                 case RegisterType.Input:
                 case RegisterType.Output:

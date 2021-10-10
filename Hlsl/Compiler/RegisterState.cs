@@ -463,18 +463,19 @@ namespace HlslDecompiler.Hlsl
                         }
 
                         byte[] swizzle = instruction.GetSourceSwizzleComponents(srcIndex);
-                        float[] constant = {
+                        float[] constant = swizzle.Select(x => constantRegister[x]).ToArray();
+                        /*{
                             constantRegister[swizzle[0]],
                             constantRegister[swizzle[1]],
                             constantRegister[swizzle[2]],
-                            constantRegister[swizzle[3]] };
+                            constantRegister[swizzle[3]] };*/
 
                         switch (instruction.GetSourceModifier(srcIndex))
                         {
                             case SourceModifier.None:
                                 break;
                             case SourceModifier.Negate:
-                                for (int i = 0; i < 4; i++)
+                                for (int i = 0; i < constant.Length; i++)
                                 {
                                     constant[i] = -constant[i];
                                 }
@@ -486,7 +487,21 @@ namespace HlslDecompiler.Hlsl
                         int destLength;
                         if (instruction.HasDestination)
                         {
-                            destLength = instruction.GetDestinationMaskLength();
+                            // FIXME: this could be handled incorrectly!
+                            switch (instruction.Opcode)
+                            {
+                                case Opcode.Dp3:
+                                    destLength = 3;
+                                    break;
+                                case Opcode.Dp4:
+                                case Opcode.IfC:
+                                    destLength = 4;
+                                    break;
+                                default:
+                                    destLength = instruction.GetDestinationMaskLength();
+                                    break;
+                            }
+
                         }
                         else
                         {
