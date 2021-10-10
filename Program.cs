@@ -20,6 +20,8 @@ namespace HlslDecompiler
 
             using (var inputStream = File.Open(options.InputFilename, FileMode.Open, FileAccess.Read))
             {
+                inputStream.Seek(options.Offset, SeekOrigin.Begin);
+
                 var format = FormatDetector.Detect(inputStream);
                 switch (format)
                 {

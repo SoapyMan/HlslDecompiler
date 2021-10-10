@@ -6,6 +6,7 @@ namespace HlslDecompiler.Util
     {
         public string InputFilename { get; }
         public bool DoAstAnalysis { get; }
+        public int Offset { get; }
 
         public static CommandLineOptions Parse(string[] args)
         {
@@ -14,6 +15,8 @@ namespace HlslDecompiler.Util
 
         private CommandLineOptions(string[] args)
         {
+            Offset = 0;
+
             foreach (string arg in args)
             {
                 if (arg.StartsWith("--"))
@@ -22,6 +25,11 @@ namespace HlslDecompiler.Util
                     if (option == "ast")
                     {
                         DoAstAnalysis = true;
+                    }
+                    else if (option.StartsWith("offset="))
+                    {
+                        string le = "offset=";
+                        Offset = Convert.ToInt32(option.Substring(le.Length));
                     }
                     else
                     {
