@@ -133,6 +133,9 @@ namespace HlslDecompiler.DirectXShaderModel
                     {
                         dclInstruction += "_" + instruction.GetDeclSemantic().ToLower();
                     }
+
+                    dclInstruction += GetModifier(instruction);
+
                     WriteLine("{0} {1}", dclInstruction, GetDestinationName(instruction));
                     break;
                 case Opcode.Def:
@@ -153,8 +156,8 @@ namespace HlslDecompiler.DirectXShaderModel
                     }
                     break;
                 case Opcode.DP2Add:
-                    WriteLine("dp2add {0}, {1}, {2}, {3}", GetDestinationName(instruction),
-                        GetSourceName(instruction, 1), GetSourceName(instruction, 2), GetSourceName(instruction, 3));
+                    WriteLine("dp2add{4} {0}, {1}, {2}, {3}", GetDestinationName(instruction),
+                        GetSourceName(instruction, 1), GetSourceName(instruction, 2), GetSourceName(instruction, 3), GetModifier(instruction));
                     break;
                 case Opcode.Dp3:
                     WriteLine("dp3{0} {1}, {2}, {3}", GetModifier(instruction), GetDestinationName(instruction),
@@ -276,17 +279,17 @@ namespace HlslDecompiler.DirectXShaderModel
                 case Opcode.Tex:
                     if ((shader.MajorVersion == 1 && shader.MinorVersion >= 4) || (shader.MajorVersion > 1))
                     {
-                        WriteLine("texld {0}, {1}, {2}", GetDestinationName(instruction),
-                            GetSourceName(instruction, 1), GetSourceName(instruction, 2));
+                        WriteLine("texld{3} {0}, {1}, {2}", GetDestinationName(instruction),
+                            GetSourceName(instruction, 1), GetSourceName(instruction, 2), GetModifier(instruction));
                     }
                     else
                     {
-                        WriteLine("tex {0}", GetDestinationName(instruction));
+                        WriteLine("tex{1} {0}", GetDestinationName(instruction), GetModifier(instruction));
                     }
                     break;
                 case Opcode.TexLDL:
-                    WriteLine("texldl {0}, {1}, {2}", GetDestinationName(instruction),
-                        GetSourceName(instruction, 1), GetSourceName(instruction, 2));
+                    WriteLine("texldl{3} {0}, {1}, {2}", GetDestinationName(instruction),
+                        GetSourceName(instruction, 1), GetSourceName(instruction, 2), GetModifier(instruction));
                     break;
                 case Opcode.TexKill:
                     WriteLine("texkill {0}", GetDestinationName(instruction));
@@ -305,19 +308,19 @@ namespace HlslDecompiler.DirectXShaderModel
         private static string GetModifier(Instruction instruction)
         {
             ResultModifier resultModifier = instruction.GetDestinationResultModifier();
-            switch (resultModifier)
-            {
-                case ResultModifier.None:
-                    return string.Empty;
-                case ResultModifier.Centroid:
-                    return "_centroid";
-                case ResultModifier.PartialPrecision:
-                    return "_pp";
-                case ResultModifier.Saturate:
-                    return "_sat";
-                default:
-                    throw new NotSupportedException("Not supported result modifier " + resultModifier);
-            }
+
+            string modifiers = "";
+
+            if((resultModifier & ResultModifier.Saturate) != 0)
+                modifiers += "_sat";
+
+            if ((resultModifier & ResultModifier.PartialPrecision) != 0)
+                modifiers += "_pp";
+
+            if ((resultModifier & ResultModifier.Centroid) != 0)
+                modifiers += "_centroid";
+
+            return modifiers;
         }
     }
 }

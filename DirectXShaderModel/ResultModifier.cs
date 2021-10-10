@@ -4,8 +4,8 @@
     public enum ResultModifier
     {
         None,
-        Saturate,
-        PartialPrecision,
-        Centroid
+        Saturate = 0x1,
+        PartialPrecision = 0x2,
+        Centroid = 0x4
     }
 }
